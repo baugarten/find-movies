@@ -1,0 +1,32 @@
+<head>
+  <title>meteor_movies</title>
+</head>
+
+<body>
+  {{> search}}
+  {{> results}}
+</body>
+
+<template name="search">
+<div id="searchbox">
+  <h1>Find my movie!</h1>
+  <input type="text" id="search" value="{{ search }}" />
+</div>
+</template>
+
+<template name="results">
+  <ul>
+    {{#each movies }}
+      {{> movie}}
+    {{/each}}
+  </ul>
+    {{> movie_details}}
+</template>
+<template name="movie">
+<li>
+  <img src="{{artwork100}}" />
+  <span class="title">{{ title }}</span>
+</li>
+</template>
+<template name="movie_details">
+</template>
