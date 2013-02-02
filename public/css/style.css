@@ -1,0 +1,50 @@
+body {
+  min-height: 100%;
+  background-color: #F4F4F4;
+}
+
+input#search {
+  margin: 10px 0;
+  font-size: 72px;
+  line-height: 72px;
+
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+
+  padding: 0;
+  background: 0;
+  border: 0;
+  color: #393939;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  border-bottom: 1px solid #CCC;
+  box-shadow: none;
+  width: 100%;
+
+  height: auto;
+  border-radius: 2px;
+  -webkit-appearance: none;
+
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+
+}
+
+input#search:focus {
+  outline-width: 0;
+}
+
+.movie {
+  width: 300px;
+  float: left;
+  margin: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(179,169,169,0.27);
+  background: rgba(235,229,229,0.12);
+}
+
+.movie:hover {
+  background: rgba(223,220,220,0.41);
+  border-color: #CAC9C9;
+}
