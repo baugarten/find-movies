@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "dependencies": {
     "express": "3.1.0",
-    "jade": "0.28.1"
+    "jade": "0.28.1",
+    "request": "2.12.0",
+    "xml2json": "0.3.2"
   },
   "engines": {
     "node": "0.8.x",

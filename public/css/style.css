@@ -3,6 +3,10 @@ body {
   background-color: #F4F4F4;
 }
 
+.hidden {
+  display: none;
+}
+
 input#search {
   margin: 10px 0;
   font-size: 72px;
@@ -48,7 +52,8 @@ input#search:focus {
 }
 
 .movie.big {
-  width: 23%;
+  width: 22%;
+//  height: auto;
 }
 
 .movie .title {
@@ -69,7 +74,9 @@ input#search:focus {
 }
 
 .movie.big img {
-  min-width: 50%;
+  min-width: 30%;
+  max-height: 600px;
+  max-width: 400px !important;
 }
 
 
