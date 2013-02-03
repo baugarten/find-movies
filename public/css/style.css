@@ -36,12 +36,37 @@ input#search:focus {
 }
 
 .movie {
-  width: 300px;
+  min-width: 300px;
+  max-width: 23%;
   float: left;
   margin: 10px;
   border-radius: 4px;
   border: 1px solid rgba(179,169,169,0.27);
   background: rgba(235,229,229,0.12);
+}
+
+.movie.big {
+  width: 23%;
+}
+
+.movie img {
+  max-width: 50%;
+  vertical-align: text-top;
+}
+
+.movie .title {
+  min-width: 150px;
+  width: 100%;
+  font-size: 24px;
+  line-height: 24px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  color: #393939;
+  font-weight: 595;
+  text-transform: uppercase;
+}
+
+.movie .title.big {
+  width: 100%;
 }
 
 .movie:hover {

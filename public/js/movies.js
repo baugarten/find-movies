@@ -3,7 +3,9 @@ $(document).ready(function() {
     search($(this).val());
   });
 
-  var publishedTime = 0;
+  var publishedTime = 0,
+      movieData = [];
+
 
   function search(value) {
     $.ajax({
@@ -28,16 +30,27 @@ $(document).ready(function() {
   function showMovies(movieList) {
     var movies = "",
         display = true,
-        date = new Date();
+        date = new Date(),
+        big = (movieList.length <= 4);
+        imageFormat = big ? '600x600' : '225x225'; 
+    console.log(movieList[0]);
     movieList.forEach(function(movie) {
-      console.log(publishedTime > date.getTime());
       if (publishedTime > date.getTime()) {
         display = false; 
         return;
       }
+      var newMovie = {
+        title: movie.trackName,
+        date: movie.trackName.match(/\d{4}/) ? "" : '('+movie.releaseDate.substring(0, 4)+')'
+      }
+      newMovie[imagekey(big)] = movie.artworkUrl100.replace(/100x100/, imageFormat);
+      movieData.push(newMovie);
       var movieStr = movieTmpl
-        .replace(/%IMAGE_LINK%/, movie.artworkUrl100.replace(/100x100/g, '225x225'))
-        .replace(/%TITLE%/, movie.trackName);
+        .replace(/%IMAGE_LINK%/, newMovie[imagekey(big)]) 
+        .replace(/%TITLE%/, newMovie.title)
+        .replace(/\(%YEAR%\)/, newMovie.date);
+      if (big) movieStr = movieStr.replace(/class=\'title\'/, "class='title big'");
+      if (big) movieStr = movieStr.replace(/class=\'movie\'/, "class='movie big'");
       movies = movies + movieStr;
     });
     if (display) { 
@@ -46,10 +59,18 @@ $(document).ready(function() {
     }
   }
 
+  function imagekey(big) {
+    return 'image' + ((big) ? 'Big' : 'Small');
+  }
+
+  function getInfo(movie) {
+
+  }
+
   var movieTmpl = "\
     <div class='movie'> \
+      <div class='title'>%TITLE% (%YEAR%)</div> \
       <img src='%IMAGE_LINK%' /> \
-      %TITLE% \
     </div> \
   ";
 
