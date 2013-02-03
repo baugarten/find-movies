@@ -39,16 +39,20 @@ $(document).ready(function() {
         display = false; 
         return;
       }
-      var newMovie = {
-        title: movie.trackName,
-        date: movie.trackName.match(/\d{4}/) ? "" : '('+movie.releaseDate.substring(0, 4)+')'
-      }
+      var cutdesc = movie.longDescription.substring(0, 210),
+          desc = cutdesc.substring(0, cutdesc.lastIndexOf(' ')) + "<br />Read more...",
+          newMovie = {
+            title: movie.trackName,
+            date: movie.trackName.match(/\d{4}/) ? "" : '('+movie.releaseDate.substring(0, 4)+')',
+            description: desc,
+          };
       newMovie[imagekey(big)] = movie.artworkUrl100.replace(/100x100/, imageFormat);
       movieData.push(newMovie);
       var movieStr = movieTmpl
-        .replace(/%IMAGE_LINK%/, newMovie[imagekey(big)]) 
+        .replace(/%IMAGE_LINK%/g, newMovie[imagekey(big)]) 
         .replace(/%TITLE%/, newMovie.title)
-        .replace(/\(%YEAR%\)/, newMovie.date);
+        .replace(/\(%YEAR%\)/, newMovie.date)
+        .replace(/%DESCRIPTION%/, newMovie.description);
       if (big) movieStr = movieStr.replace(/class=\'title\'/, "class='title big'");
       if (big) movieStr = movieStr.replace(/class=\'movie\'/, "class='movie big'");
       movies = movies + movieStr;
@@ -70,7 +74,9 @@ $(document).ready(function() {
   var movieTmpl = "\
     <div class='movie'> \
       <div class='title'>%TITLE% (%YEAR%)</div> \
+      <!-- <div class='img' style=\"background-image:url('%IMAGE_LINK%')\"></div> --> \
       <img src='%IMAGE_LINK%' /> \
+      <span class='description'>%DESCRIPTION%</span> \
     </div> \
   ";
 
