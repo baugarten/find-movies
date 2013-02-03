@@ -8,6 +8,7 @@ $(document).ready(function() {
 
 
   function search(value) {
+    var curTime = new Date().getTime();
     $.ajax({
       method: "GET",
       url: "https://itunes.apple.com/search",
@@ -20,21 +21,19 @@ $(document).ready(function() {
       },
       dataType: "jsonp",
       success: function(data, textStatus, xhr) {
-        var curTime = new Date().getTime();
-        showMovies(data.results);
+        showMovies(data.results, curTime);
       },
       error: function(xhr, status, errorThrown) {},
     });
   }
 
-  function showMovies(movieList) {
+  function showMovies(movieList, time) {
     var movies = "",
         display = true,
-        date = new Date(),
         big = (movieList.length <= 4);
         imageFormat = big ? '600x600' : '225x225'; 
     movieList.forEach(function(movie) {
-      if (publishedTime > date.getTime()) {
+      if (publishedTime > time) {
         display = false; 
         return;
       }
@@ -58,11 +57,10 @@ $(document).ready(function() {
       } else {
         movieStr = renderSmall(newMovie)
       }
-
       movies = movies + movieStr;
     });
     if (display) { 
-      publishedTime = date.getTime();
+      publishedTime = time;
       $("#results").html(movies);
       postRender();
     }
@@ -168,7 +166,7 @@ $(document).ready(function() {
       success: function(data) {
         console.log(data);
         var items = data.ItemSearchResponse.Items.Item;
-        if (items.length < 0) {
+        if (!items || items.length < 0) {
           movie.amazonNotFound = true;
           return;
         }

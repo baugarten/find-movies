@@ -1,8 +1,7 @@
 var express = require('express'),
     http = require('http'),
     request = require('request'),
-    OperationHelper = require('apac').OperationHelper,
-    parser = require('xml2json');
+    OperationHelper = require('json-apac').OperationHelper;
 
 var app = express();
 
@@ -41,7 +40,6 @@ app.get('/amazon', function(req, res) {
     'BrowseNode': '2858778011',
     'SearchIndex': 'Video',
     'Keywords': decodeURI(req.query.title),
-    //'Title': decodeURI(req.query.title),
     'ResponseGroup': 'ItemAttributes,Offers'
   }, function(error, results) {
     if (error) {
@@ -49,7 +47,7 @@ app.get('/amazon', function(req, res) {
       res.write(error);
     } else {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.write(parser.toJson(results));
+      res.write(results);
       res.end();
     }
     
