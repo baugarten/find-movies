@@ -275,8 +275,8 @@ $(document).ready(function() {
           {{NETFLIX_AVAILABLE}} \
             Free: <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_logo.png' /></a> \
           {{:NETFLIX_AVAILABLE}} \
-            Not available on netflix
-          {{/NETFLIX_AVAILABLE}}
+            Not available on netflix \
+          {{/NETFLIX_AVAILABLE}} \
         </div> \
       {{/BIG}} \
     </div>");
