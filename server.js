@@ -36,12 +36,17 @@ app.get('/netflix', function(req, res) {
 });
 
 app.get('/amazon', function(req, res) {
+  console.log("Servicing search for " + req.query.title);
   opHelper.execute('ItemSearch', {
     'BrowseNode': '2858778011',
     'SearchIndex': 'Video',
-    'Keywords': decodeURI(req.query.title),
+    'Title': decodeURI(req.query.title),
+    //'Keywords': req.query.year,
+    //'Director': req.query.director,
     'ResponseGroup': 'ItemAttributes,Offers'
   }, function(error, results) {
+    console.log("Got search for " + req.query.title);
+    console.log(error);
     if (error) {
       res.writeHead(500);
       res.write(error);

@@ -52,8 +52,8 @@ input#search:focus {
 }
 
 .movie.big {
-  width: 22%;
-//  height: auto;
+  width: 47%;
+  height: 350;
 }
 
 .movie .title {
@@ -64,6 +64,10 @@ input#search:focus {
   color: #393939;
   font-weight: 595;
   text-transform: uppercase;
+}
+.movie.big .title {
+  font-size: 32px;
+  line-height: 32px;
 }
 
 .movie img {
@@ -83,6 +87,17 @@ input#search:focus {
 .movie .description {
   display: block;
 }
+.movie.big .description {
+  float: left;
+  width: 30%;
+  padding-right: 10px;
+}
+
+.movie.big .links {
+  float: left;
+  width: 30%;
+}
+
 .movie:hover {
   background: rgba(223,220,220,0.41);
   border-color: #CAC9C9;

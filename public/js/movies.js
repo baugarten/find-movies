@@ -48,6 +48,7 @@ $(document).ready(function() {
               description: desc,
               netflix: false,
               amazon: false,
+              director: movie.artistName,
             };
       newMovie[imagekey(big)] = movie.artworkUrl100.replace(/100x100/, imageFormat);
       movieData[newMovie.id] = newMovie;
@@ -67,36 +68,67 @@ $(document).ready(function() {
   }
 
   function renderBig(movie) {
+    var params = render(movie);
+    params['IMAGE_LINK'] = movie[imagekey(true)];
+    params['BIG'] = true;
+    params['NETFLIX_AVAILABLE'] = movie.netflix && movie.netflix.instant;
+    params['NETFLIX_URL'] = movie.netflix && movie.netflix.url;
+    if (movie.amazon) {
+      params['AMAZON'] = true;
+      console.log(movie.amazon);
+      params['AMAZON_SEARCHING'] = movie.amazon.searching;
+      params['AMAZON_NOTFOUND'] = movie.amazon.notFound;
+      params['AMAZON_URL'] = movie.amazon.url;
+      params['AMAZON_PRICE'] = movie.amazon.instant;
+    }
+    /*
     var html = render(movie, true)
       .replace(/%IMAGE_LINK%/g, movie[imagekey(true)]) 
       .replace(/class=\'movie\'/, "class='movie big'")
       .replace(/%BIG%.*?%BIG%/, '')
-      .replace(/%AMAZON\.PRICE%/, movie.amazon && movie.amazon.instant)
       .replace(/%NETFLIX\.AVAILABLE%/, movie.netflix && movie.netflix.instant);
-    if (movie.amazon) {
+    if (movie.amazon && !movie.amazon.searching) {
       html = html.replace(/%AMAZON%/g, '');
-      html = html.replace(/%AMAZON%/g, '');
+      html = html.replace(/%AMAZON\.URL%/, '/static/images/amazon_logo.jpg');
+      if (movie.amazon.url) {
+        html = html.replace(/%AMAZON\.LINK%/, movie.amazon.url);
+      }
+      html = html.replace(/%AMAZON\.PRICE%/, movie.amazon.instant)
     } else {
       html = html.replace(/%AMAZON%.*?%AMAZON%/, '');
     }
-    console.log(movie.amazon.instant);
-    console.log(movie.netflix.instant);
-    return html 
+    */
+    //return html 
+    return movieTmpl.render(params);
   }
 
-  function renderSmall(movie, big) {
-    big = !!big;
-    return movieStr = render(movie)
+  function renderSmall(movie) {
+    /*jreturn movieStr = render(movie)
       .replace(/%IMAGE_LINK%/g, movie[imagekey(false)]) 
       .replace(/%BIG%/g, '');
+      */
+    params = render(movie);
+    params['IMAGE_LINK'] = movie[imagekey(false)];
+    params['BIG'] = false;
+    console.log(params);
+    console.log(movieTmpl.render(params));
+    return movieTmpl.render(params);
   }
 
-  function render(movie) {
+  function render2(movie) {
     return movieStr = movieTmpl
       .replace(/%ID%/g, movie.id)
       .replace(/%TITLE%/, movie.title)
       .replace(/\(%YEAR%\)/, movie.date)
       .replace(/%DESCRIPTION%/, movie.description)
+  }
+  function render(movie) {
+    return {
+      ID: movie.id,
+      TITLE: movie.title,
+      YEAR: movie.date,
+      DESCRIPTION: movie.description,
+    }
   }
 
   function imagekey(big) {
@@ -144,6 +176,9 @@ $(document).ready(function() {
           instant: props.Instant.Available,
           url: props.Url
         };
+        /*console.log("NETFLIX UPDATED");
+        console.log(movie.title);
+        console.log(movie.netflix);*/
         rerender(movie);
       },
       error: function(a, b, c) {
@@ -154,52 +189,106 @@ $(document).ready(function() {
     });
   }
   function amazonUpdate(movie) {
-    if (movie.amazon) return;
-    console.log("AMAZON UPDATE");
+    if (movie.amazon || movie.amazon.searching) {
+      console.log("Skipping amazon " + movie.title);
+      return;
+    }
+    console.log("Searching amazon " + movie.title);
+    movie.amazon = { searching: true };
     $.ajax({
       method: 'GET',
       url: '/amazon',
       data: {
         title: encodeURI(movie.title),
         year: movie.date.substring(1, movie.date.length - 1),
+        director: movie.director,
       },
       success: function(data) {
-        console.log(data);
-        var items = data.ItemSearchResponse.Items.Item;
-        if (!items || items.length < 0) {
-          movie.amazonNotFound = true;
+        console.log("Searched amazon " + movie.title);
+        var itemCount = data.ItemSearchResponse.Items.TotalResults,
+            items = data.ItemSearchResponse.Items.Item,
+            mostLikely, 
+            sure = false,
+            titleRegexp = new RegExp(movie.title, 'i');
+        if (itemCount === 0) {
+          console.log("NO AMAZON ITEMS FOUND");
+          console.log(movie.title);
+          movie.amazon.notFound = true;
+          movie.amazon.searching = false;
+          rerender(movie);
           return;
         }
-        for (var i = 0; i < items.length; i++) {
-          var item = items[i];
-          if (item.ItemAttributes.ProductTypeName !== "DOWNLOADABLE_MOVIE") {
-            continue;
+        if (itemCount === 1) {
+          mostLikely = items;
+          sure = true;
+        } else {
+          mostLikely = items[0];
+          for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.ItemAttributes.ProductTypeName !== "DOWNLOADABLE_MOVIE") {
+              continue;
+            }
+            if (item.ItemAttributes.Title.match(titleRegexp)) {
+              if (item.ItemAttributes.Title.length === movie.title.length) {
+                mostLikely = item;
+                sure = true;
+              } else {
+                if (!mostLikely) mostLikely = item;
+              }
+            }
           }
-          movie.amazon = {
-            instant: item.Offers.Offer.OfferListing.Price.FormattedPrice,
-            url: item.DetailPageUrl,
-          }
-          console.log("UPDATED");
-          console.log(movie.amazon);
-          rerender(movie);
         }
+        movie.amazon = {
+          instant: mostLikely.Offers.Offer && mostLikely.Offers.Offer.OfferListing.Price.FormattedPrice,
+          url: mostLikely.DetailPageURL,
+          sure: sure,
+          searching: false,
+        }
+        rerender(movie);
       },
       error: function(a, b, c) {
+        console.log("FAILED AMAZON " + movie.title);
         console.log(a);
         console.log(b);
         console.log(c);
       }
     });
   }
+  var movieTmpl = new t(" \
+    <div class='movie {{BIG}} big {{/BIG}}' id='{{=ID}}'> \
+      <div class='title'>{{=TITLE}} {{=YEAR}}</div> \
+      <img src='{{=IMAGE_LINK}}' /> \
+      <div class='description'>{{=DESCRIPTION}}</div> \
+      {{BIG}} \
+        <div class='links'> \
+          {{AMAZON}} \
+            {{AMAZON_SEARCHING}} \
+              <img src='/static/images/ajax-loader.gif' />  \
+            {{:AMAZON_SEARCHING}} \
+              {{AMAZON_NOTFOUND}} \
+                Could\'t find on amazon \
+              {{:AMAZON_NOTFOUND}} \
+                <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_logo.jpg' /></a> {{=AMAZON_PRICE}} \
+              {{/AMAZON_NOTFOUND}} \
+            {{/AMAZON_SEARCHING}} \
+          {{/AMAZON}}  \
+          {{NETFLIX_AVAILABLE}} \
+            Free: <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_logo.png' /></a> \
+          {{:NETFLIX_AVAILABLE}} \
+            Not available on netflix
+          {{/NETFLIX_AVAILABLE}}
+        </div> \
+      {{/BIG}} \
+    </div>");
 
-  var movieTmpl = "\
+  var movieTmpl2 = "\
     <div class='movie' id='%ID%'> \
       <div class='title'>%TITLE% (%YEAR%)</div> \
       <!-- <div class='img' style=\"background-image:url('%IMAGE_LINK%')\"></div> --> \
       <img src='%IMAGE_LINK%' /> \
-      <span class='description'>%DESCRIPTION%</span> \
-      <div %BIG% class='hidden' %BIG%> \
-        %AMAZON% <img src='/static/images/amazon_logo.jpg' /> %AMAZON.PRICE% %AMAZON%\
+      <div class='description'>%DESCRIPTION%</div> \
+      <div class='links %BIG%hidden%BIG%'> \
+        %AMAZON% <a href='%AMAZON.URL%'><img src='%AMAZON.LOGO%' /></a> %AMAZON.PRICE% %AMAZON%\
         NETFLIX: %NETFLIX.AVAILABLE% \
       </div> \
     </div> \
