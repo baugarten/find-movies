@@ -1,4 +1,12 @@
 $(document).ready(function() {
+
+  function equalize(group) {
+    var tallest = 0;
+    group.each(function() {
+      if ($(this).height() > tallest) tallest = $(this).height();
+    });
+    group.height(tallest);
+  }
   $("input").keyup(function(event) {
     search($(this).val());
   });
@@ -32,6 +40,7 @@ $(document).ready(function() {
         display = true,
         big = (movieList.length <= 4);
         imageFormat = big ? '600x600' : '225x225'; 
+    console.log(movieList[0]);
     movieList.forEach(function(movie) {
       if (publishedTime > time) {
         display = false; 
@@ -63,7 +72,7 @@ $(document).ready(function() {
     if (display) { 
       publishedTime = time;
       $("#results").html(movies);
-      postRender();
+      equalize($(".movie"));
     }
   }
 
@@ -255,30 +264,38 @@ $(document).ready(function() {
     });
   }
   var movieTmpl = new t(" \
-    <div class='movie {{BIG}} big {{/BIG}}' id='{{=ID}}'> \
-      <div class='title'>{{=TITLE}} {{=YEAR}}</div> \
-      <img src='{{=IMAGE_LINK}}' /> \
-      <div class='description'>{{=DESCRIPTION}}</div> \
-      {{BIG}} \
-        <div class='links'> \
-          {{AMAZON}} \
-            {{AMAZON_SEARCHING}} \
-              <img src='/static/images/ajax-loader.gif' />  \
-            {{:AMAZON_SEARCHING}} \
-              {{AMAZON_NOTFOUND}} \
-                Could\'t find on amazon \
-              {{:AMAZON_NOTFOUND}} \
-                <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_logo.jpg' /></a> {{=AMAZON_PRICE}} \
-              {{/AMAZON_NOTFOUND}} \
-            {{/AMAZON_SEARCHING}} \
-          {{/AMAZON}}  \
-          {{NETFLIX_AVAILABLE}} \
-            Free: <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_logo.png' /></a> \
-          {{:NETFLIX_AVAILABLE}} \
-            Not available on netflix \
-          {{/NETFLIX_AVAILABLE}} \
+    <div class='movie {{BIG}} span6 {{:BIG}} span4 {{/BIG}}' id='{{=ID}}'> \
+      <div class='row'> \
+        <div class='{{BIG}} span6 {{:BIG}} span4 {{/BIG}} title'>{{=TITLE}} {{=YEAR}}</div> \
+      </div> \
+      <div class='row'> \
+        <div class='span2'> \
+          <img src='{{=IMAGE_LINK}}' /> \
         </div> \
-      {{/BIG}} \
+        <div class='span2'> \
+          <div class='description'>{{=DESCRIPTION}}</div> \
+        </div> \
+        {{BIG}} \
+          <div class='span2 links'> \
+            {{AMAZON}} \
+              {{AMAZON_SEARCHING}} \
+                <img src='/static/images/ajax-loader.gif' />  \
+              {{:AMAZON_SEARCHING}} \
+                {{AMAZON_NOTFOUND}} \
+                  Could\'t find on amazon \
+                {{:AMAZON_NOTFOUND}} \
+                  <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_logo.jpg' /></a> {{=AMAZON_PRICE}} \
+                {{/AMAZON_NOTFOUND}} \
+              {{/AMAZON_SEARCHING}} \
+            {{/AMAZON}}  \
+            {{NETFLIX_AVAILABLE}} \
+              Free: <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_logo.png' /></a> \
+            {{:NETFLIX_AVAILABLE}} \
+              Not available on netflix \
+            {{/NETFLIX_AVAILABLE}} \
+          </div> \
+        {{/BIG}} \
+      </div> \
     </div>");
 
   var movieTmpl2 = "\
