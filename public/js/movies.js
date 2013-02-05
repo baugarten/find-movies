@@ -59,6 +59,7 @@ $(document).ready(function() {
               description: desc,
               netflix: false,
               amazon: false,
+              vudu: false,
               director: movie.artistName,
               itunes: {
                 url: movie.trackViewUrl,
@@ -97,6 +98,11 @@ $(document).ready(function() {
       params['AMAZON_URL'] = movie.amazon.url;
       params['AMAZON_PRICE'] = movie.amazon.instant;
     }
+    if (movie.vudu) {
+      params['VUDU_URL'] = movie.vudu.url;
+      params['VUDU_BUY'] = movie.vudu.pto || false;
+      params['VUDU_RENT'] = movie.vudu.ptr || false;
+    }
     return movieTmpl.render(params);
   }
 
@@ -130,12 +136,17 @@ $(document).ready(function() {
   function getInfo(movie) {
     netflixUpdate(movie);
     amazonUpdate(movie);
+    vuduUpdate(movie);
   }
 
   function rerender(movie) {
     if ($("#" + movie.id).length < 1 || !$("#" + movie.id).hasClass('span6')) return;
     var html = renderBig(movie);
     $("#" + movie.id).replaceWith(html);
+    console.log("EQUALIEZ");
+    console.log($("#" + movie.id + " .thumbnails .link"));
+    equalize($("#" + movie.id + " .thumbnails .link"));
+    equalize($(".movie"));
   }
 
   function postRender() {
@@ -243,6 +254,70 @@ $(document).ready(function() {
       }
     });
   }
+
+  function vuduUpdate(movie) {
+    if (movie.vudu || movie.vudu.searching) {
+      console.log("Skipping vudu " + movie.title);
+      return;
+    }
+    console.log("Searching vudu " + movie.title);
+    movie.vudu = { searching: true };
+    $.ajax({
+      method: "GET",
+      url: "/vudu",
+      data: {
+        title: movie.title,
+        year: movie.year,
+        director: movie.director
+      },
+      success: function(data) {
+        console.log(movie.title);
+        console.log(data);
+        movie.vudu.searching = false;
+        var items,
+            totalCount = parseInt(data.totalCount[0]),
+            found,
+            titleRegexp = new RegExp(movie.title, 'i');
+        if (totalCount === 0) {
+          movie.vudu.notFound = true;
+          return rerender(movie);
+        }
+        items = data.content;
+        found = items[0];
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          if (item.title[0].match(titleRegexp)) {
+            if (item.title[0].length === movie.title.length) {
+              found = item;
+              sure = true;
+              break;
+            } else {
+              if (!found) found = item;
+            }
+          }
+        }
+        var rentPrice,
+            ownPrice;
+        found.contentVariants.forEach(function(variant) {
+          variant.contentVariant[0].offers[0].offer.forEach(function(offer) {
+            if (offer.offerType[0] === 'pto') {
+              movie.vudu.pto = offer.price[0];
+            } else if (offer.offerType[0] === 'ptr') {
+              movie.vudu.ptr = offer.price[0];
+            }
+          });
+
+        });
+
+        movie.vudu.url = 'http://www.vudu.com/movies/#!content/' + found.contentId;
+      },
+      error: function(a,b,c) {
+        console.log(a);
+        console.log(b);
+        console.log(c);
+      },
+    }); 
+  }
   var movieTmpl = new t(" \
     <div class='movie {{BIG}} span6 {{:BIG}} span4 {{/BIG}}' id='{{=ID}}'> \
       <div class='row'> \
@@ -256,43 +331,69 @@ $(document).ready(function() {
           <div class='description'>{{=DESCRIPTION}}</div> \
         </div> \
         {{BIG}} \
-          <div class='span2 links'> \
+          <ul class='thumbnails links'> \
             {{AMAZON}} \
+              <li class='span1 link'> \
+                <div class='thumbnail'> \
               {{AMAZON_SEARCHING}} \
                 <img src='/static/images/ajax-loader.gif' />  \
               {{:AMAZON_SEARCHING}} \
                 {{AMAZON_NOTFOUND}} \
                   Could\'t find on amazon \
                 {{:AMAZON_NOTFOUND}} \
-                  <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_logo.jpg' /></a> {{=AMAZON_PRICE}} \
+                      <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_icon.png' /></a> \
+                      <div class='price'> \
+                        {{=AMAZON_PRICE}} \
+                      </div> \
                 {{/AMAZON_NOTFOUND}} \
               {{/AMAZON_SEARCHING}} \
+                </div> \
+              </li> \
             {{/AMAZON}}  \
+            {{VUDU_RENT}} \
+              <li class='span1 link'> \
+                <div class='thumbnail'> \
+                  <a href='{{=VUDU_URL}}'><img src='/static/images/vudu_icon.png' /></a> \
+                  <div class='price'> \
+                    {{=VUDU_RENT}} \
+                  </div> \
+                </div> \
+              </li> \
+            {{/VUDU_RENT}} \
             {{NETFLIX_AVAILABLE}} \
-              Free: <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_logo.png' /></a> \
+              <li class='span1 link'> \
+                <div class='thumbnail'> \
+                  <a href='{{=NETFLIX_URL}}'><img src='/static/images/netflix_icon.png' /></a> \
+                  <div class='price'> \
+                    Free \
+                  </div> \
+                </div> \
+              </li> \
             {{:NETFLIX_AVAILABLE}} \
-              Not available on netflix \
             {{/NETFLIX_AVAILABLE}} \
             {{ITUNES_BUY}} \
-              <a href='{{=ITUNES_URL}}'><img src='/static/images/available_itunes.png' /></a> \
+              <li class='span1 link'> \
+                <div class='thumbnail'> \
+                  <a href='{{=ITUNES_URL}}'><img src='/static/images/itunes_icon.png' /></a> \
+                  <div class='price'> \
+                    {{=ITUNES_BUY}} \
+                  </div> \
+                </div> \
+              </li> \
             {{/ITUNES_BUY}} \
+            {{VUDU_BUY}} \
+              <li class='span1 link'> \
+                <div class='thumbnail'> \
+                  <a href='{{=VUDU_URL}}'><img src='/static/images/vudu_icon.png' /></a> \
+                  <div class='price'> \
+                    {{=VUDU_BUY}} \
+                  </div> \
+                </div> \
+              </li> \
+            {{/VUDU_BUY}} \
+            </div> \
           </div> \
         {{/BIG}} \
       </div> \
     </div>");
-
-  var movieTmpl2 = "\
-    <div class='movie' id='%ID%'> \
-      <div class='title'>%TITLE% (%YEAR%)</div> \
-      <!-- <div class='img' style=\"background-image:url('%IMAGE_LINK%')\"></div> --> \
-      <img src='%IMAGE_LINK%' /> \
-      <div class='description'>%DESCRIPTION%</div> \
-      <div class='links %BIG%hidden%BIG%'> \
-        %AMAZON% <a href='%AMAZON.URL%'><img src='%AMAZON.LOGO%' /></a> %AMAZON.PRICE% %AMAZON%\
-        NETFLIX: %NETFLIX.AVAILABLE% \
-      </div> \
-    </div> \
-  ";
-
-
 });

@@ -57,8 +57,8 @@ input#search:focus {
   line-height: 24px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   color: #393939;
-  font-weight: 595;
-  text-transform: uppercase;
+  font-weight: 600;
+  padding-bottom: 20px;
 }
 .movie.big .title {
   font-size: 32px;
@@ -96,4 +96,12 @@ input#search:focus {
 .movie:hover {
   background: rgba(223,220,220,0.41);
   border-color: #CAC9C9;
+}
+
+.links {
+  margin-top: 0;
+}
+
+.link {
+  height: 60px;
 }

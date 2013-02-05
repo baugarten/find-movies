@@ -59,4 +59,16 @@ app.get('/amazon', function(req, res) {
   });
 });
 
+app.get('/vudu', function(req, res) {
+  request('http://apicache.vudu.com/api2/claimedAppId/myvudu/format/application*2Fjson/_type/contentSearch/count/10/dimensionality/any/followup/ratingsSummaries/followup/totalCount/followup/usefulStreamableOffers/followup/credits/followup/ultraVioletability/includeComingSoon/true/offset/0/streamable/true/titleMagic/' + decodeURI(req.query.title).replace(/\s+/g, '+') + '/type/program/type/bundle/type/bonus', function(err, res2, body) {
+    //console.log(body);
+    body = body.substring(body.indexOf('{'), body.lastIndexOf('}')+1);
+    console.log(body);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.write(body);
+    res.end();
+
+  });
+});
+
 app.listen(process.env.PORT || 3000);
