@@ -49,7 +49,7 @@ $(document).ready(function() {
         return;
       }
       var movieStr = "",
-          cutdesc = (movie.longDescription) ? movie.longDescription.substring(0, 210) : "",
+          cutdesc = (movie.longDescription) ? movie.longDescription.substring(0, 180) : "",
           desc = cutdesc.substring(0, cutdesc.lastIndexOf(' ')) + "<br />Read more...",
           newMovie = (movie.trackId in movieData) ? movieData[movie.trackId] :
             {
@@ -80,6 +80,7 @@ $(document).ready(function() {
       publishedTime = time;
       $("#results").html(movies);
       equalize($(".movie"));
+      $(".movie").css({ 'margin-top': "20px" });
     }
   }
 
@@ -147,6 +148,7 @@ $(document).ready(function() {
     console.log($("#" + movie.id + " .thumbnails .link"));
     equalize($("#" + movie.id + " .thumbnails .link"));
     equalize($(".movie"));
+    $(".movie").css({ 'margin-top': "20px" });
   }
 
   function postRender() {
