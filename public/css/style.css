@@ -7,6 +7,14 @@ body {
   display: none;
 }
 
+h1 {
+  font-size: 38.5px;
+  line-height: 40px;
+  font-weight: bold;
+  text-rendering: optimizelegibility;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
 input#search {
   margin: 10px 0;
   font-size: 72px;
