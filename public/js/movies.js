@@ -208,11 +208,13 @@ $(document).ready(function() {
       success: function(data) {
         movie.amazon.searching = false;
         console.log("Searched amazon " + movie.title);
+        console.log(data);
         var itemCount = data.ItemSearchResponse.Items.TotalResults,
             items = data.ItemSearchResponse.Items.Item,
             mostLikely, 
             sure = false,
             titleRegexp = new RegExp(movie.title, 'i');
+        console.log(itemCount);
         if (itemCount === 0) {
           console.log("NO AMAZON ITEMS FOUND");
           console.log(movie.title);
@@ -230,8 +232,9 @@ $(document).ready(function() {
             if (item.ItemAttributes.ProductTypeName !== "DOWNLOADABLE_MOVIE") {
               continue;
             }
-            if (item.ItemAttributes.Title.match(titleRegexp)) {
-              if (item.ItemAttributes.Title.length === movie.title.length) {
+            var title = $($.parseHTML(item.ItemAttributes.Title)[0]).text();
+            if (title .match(titleRegexp)) {
+              if (title.length === movie.title.length) {
                 mostLikely = item;
                 sure = true;
               } else {
