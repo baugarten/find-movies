@@ -1,4 +1,13 @@
 $(document).ready(function() {
+  var date = new Date(),
+      publishedTime = 0,
+      typeTime = date.getTime(),
+      timeout,
+      movieData = {},
+      displayed = [],
+      curSearch = '',
+      big = false,
+      timedout = false;
 
   $("input").focus();
 
@@ -9,15 +18,26 @@ $(document).ready(function() {
     });
     group.height(tallest);
   }
+
   $("input").keyup(function(event) {
+    clearTimeout(timeout);
     search($(this).val());
+    timeout = setTimeout(function() {
+      if (!big) {
+        big = true;
+        timedout = true;
+        displayed.forEach(function(movieid) {
+          getInfo(movieData[movieid]);
+        });
+      }
+    }, 1500);
   });
 
-  var publishedTime = 0,
-      movieData = {};
 
 
   function search(value) {
+    if (value === curSearch) return;
+    curSearch = value;
     var curTime = new Date().getTime();
     $.ajax({
       method: "GET",
@@ -40,9 +60,9 @@ $(document).ready(function() {
   function showMovies(movieList, time) {
     var movies = "",
         display = true,
-        big = (movieList.length <= 4);
         imageFormat = big ? '600x600' : '225x225'; 
-    console.log(movieList[0]);
+    if (!timedout) big = (movieList.length <= 4);
+    displayed = [];
     movieList.forEach(function(movie) {
       if (publishedTime > time) {
         display = false; 
@@ -63,11 +83,12 @@ $(document).ready(function() {
               director: movie.artistName,
               itunes: {
                 url: movie.trackViewUrl,
-                buyPrice: movie.trackPrice,
+                buyPrice: '$' + movie.trackPrice,
               }
             };
       newMovie[imagekey(big)] = movie.artworkUrl100.replace(/100x100/, imageFormat);
       movieData[newMovie.id] = newMovie;
+      displayed.push(newMovie.id);
       if (big) {
         getInfo(newMovie);
         movieStr = renderBig(newMovie);
@@ -93,7 +114,7 @@ $(document).ready(function() {
     params['ITUNES_BUY'] = movie.itunes.buyPrice;
     params['ITUNES_URL'] = movie.itunes.url;
     if (movie.amazon) {
-      params['AMAZON'] = true;
+      params['AMAZON'] = movie.amazon && movie.amazon.instant;
       params['AMAZON_SEARCHING'] = movie.amazon.searching;
       params['AMAZON_NOTFOUND'] = movie.amazon.notFound;
       params['AMAZON_URL'] = movie.amazon.url;
@@ -114,13 +135,6 @@ $(document).ready(function() {
     return movieTmpl.render(params);
   }
 
-  function render2(movie) {
-    return movieStr = movieTmpl
-      .replace(/%ID%/g, movie.id)
-      .replace(/%TITLE%/, movie.title)
-      .replace(/\(%YEAR%\)/, movie.date)
-      .replace(/%DESCRIPTION%/, movie.description)
-  }
   function render(movie) {
     return {
       ID: movie.id,
@@ -141,7 +155,7 @@ $(document).ready(function() {
   }
 
   function rerender(movie) {
-    if ($("#" + movie.id).length < 1 || !$("#" + movie.id).hasClass('span6')) return;
+    if (!big || $("#" + movie.id).length < 1) return;
     var html = renderBig(movie);
     $("#" + movie.id).replaceWith(html);
     console.log("EQUALIEZ");
@@ -149,16 +163,6 @@ $(document).ready(function() {
     equalize($("#" + movie.id + " .thumbnails .link"));
     equalize($(".movie"));
     $(".movie").css({ 'margin-top': "20px" });
-  }
-
-  function postRender() {
-    /*var num = $(".movie").length;
-    console.log(num);
-    if (num < 4) {
-      $(".movie.big").css({
-        width: (100/num - 1) + "%"
-      });
-    }*/
   }
 
   function netflixUpdate(movie) {
@@ -207,17 +211,12 @@ $(document).ready(function() {
       },
       success: function(data) {
         movie.amazon.searching = false;
-        console.log("Searched amazon " + movie.title);
-        console.log(data);
         var itemCount = data.ItemSearchResponse.Items.TotalResults,
             items = data.ItemSearchResponse.Items.Item,
             mostLikely, 
             sure = false,
             titleRegexp = new RegExp(movie.title, 'i');
-        console.log(itemCount);
         if (itemCount === 0) {
-          console.log("NO AMAZON ITEMS FOUND");
-          console.log(movie.title);
           movie.amazon.notFound = true;
           rerender(movie);
           return;
@@ -248,6 +247,11 @@ $(document).ready(function() {
           url: mostLikely.DetailPageURL,
           sure: sure,
           searching: false,
+        }
+        if (!movie.amazon.instant) {
+          movie.amazon = {
+            notFound: true,
+          }
         }
         rerender(movie);
       },
@@ -306,9 +310,9 @@ $(document).ready(function() {
         found.contentVariants.forEach(function(variant) {
           variant.contentVariant[0].offers[0].offer.forEach(function(offer) {
             if (offer.offerType[0] === 'pto') {
-              movie.vudu.pto = offer.price[0];
+              movie.vudu.pto = '$' + parseFloat(offer.price[0]);
             } else if (offer.offerType[0] === 'ptr') {
-              movie.vudu.ptr = offer.price[0];
+              movie.vudu.ptr = '$' + parseFloat(offer.price[0]);
             }
           });
 
@@ -344,7 +348,6 @@ $(document).ready(function() {
                 <img src='/static/images/ajax-loader.gif' />  \
               {{:AMAZON_SEARCHING}} \
                 {{AMAZON_NOTFOUND}} \
-                  Could\'t find on amazon \
                 {{:AMAZON_NOTFOUND}} \
                       <a href='{{=AMAZON_URL}}'><img src='/static/images/amazon_icon.png' /></a> \
                       <div class='price'> \

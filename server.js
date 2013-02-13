@@ -48,8 +48,8 @@ app.get('/amazon', function(req, res) {
     console.log("Got search for " + req.query.title);
     console.log(error);
     if (error) {
-      res.writeHead(500);
-      res.write(error);
+      res.writeHead(error);
+      res.end();
     } else {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.write(results);
