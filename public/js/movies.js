@@ -86,7 +86,8 @@ $(document).ready(function() {
                 buyPrice: '$' + movie.trackPrice,
               }
             };
-      newMovie[imagekey(big)] = movie.artworkUrl100.replace(/100x100/, imageFormat);
+      newMovie[imagekey(false)] = movie.artworkUrl100.replace(/100x100/, '225x225');
+      newMovie[imagekey(true)] = movie.artworkUrl100.replace(/100x100/, '600x600');
       movieData[newMovie.id] = newMovie;
       displayed.push(newMovie.id);
       if (big) {
