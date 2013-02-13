@@ -177,7 +177,7 @@ $(document).ready(function() {
         year: movie.date.substring(1, movie.date.length - 1),
       },
       success: function(data) {
-        if (data.d.results.length < 1) {
+        if (!data.d || data.d.results.length < 1) {
           movie.netflixNotFound = true;
           return;
         }
