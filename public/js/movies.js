@@ -28,6 +28,7 @@ $(document).ready(function() {
         timedout = true;
         displayed.forEach(function(movieid) {
           getInfo(movieData[movieid]);
+          rerender(movieData[movieid]);
         });
       }
     }, 1500);
