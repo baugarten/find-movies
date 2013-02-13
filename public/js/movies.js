@@ -71,7 +71,7 @@ $(document).ready(function() {
       }
       var movieStr = "",
           cutdesc = (movie.longDescription) ? movie.longDescription.substring(0, 180) : "",
-          desc = cutdesc.substring(0, cutdesc.lastIndexOf(' ')) + "<br />Read more...",
+          desc = cutdesc.substring(0, cutdesc.lastIndexOf(' '));
           newMovie = (movie.trackId in movieData) ? movieData[movie.trackId] :
             {
               id: movie.trackId,
