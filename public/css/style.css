@@ -7,6 +7,29 @@ body {
   display: none;
 }
 
+#results {
+  float: left;
+  margin: 0 auto;
+}
+
+#overlay {
+//  width: 400px;
+//  height: 300px;
+  background-color: #FFFFFF;
+}
+
+#overlay h1 {
+  padding-bottom: 10px;
+}
+
+#overlay img {
+  float: left;
+}
+
+#overlay .span10.hero-unit {
+  margin: 0;
+}
+
 h1 {
   color: #393939;
   font-size: 38.5px;
@@ -49,7 +72,7 @@ input#search:focus {
 }
 
 .movie {
-  margin-top: 40px;
+  margin-top: 20px;
   border-radius: 4px;
   margin: -1px;
   margin-left: 19px;
@@ -88,5 +111,5 @@ input#search:focus {
 }
 
 .link {
-  height: 60px;
+//  height: 60px;
 }
